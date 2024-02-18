@@ -43,6 +43,7 @@ const Board = () => {
       // ELSE: reset initSquareClickIdx to null
 
       //TODO: add logic for capturing an opponent's piece
+      // TODO: encapsulate XYCoords to FlatCoord logic in a function
 
       const [x1, y1] = flatToXYCoords.get(initSquareClickIdx) || [-99, -99];
       const [x2, y2] = flatToXYCoords.get(squareClickIdx) || [-99, -99];
