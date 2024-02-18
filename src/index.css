@@ -1,4 +1,11 @@
 :root {
+  /* CSS HEX */
+  --berkeley-blue: #0d2c54ff;
+  --carmine: #8c001aff;
+  --vanilla: #f2f3aeff;
+  --cadet-gray: #9aa0a8ff;
+  --black: #000000ff;
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   box-sizing: border-box;
 }

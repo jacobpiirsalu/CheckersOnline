@@ -1,8 +1,18 @@
 import styles from "./GamePiece.module.css";
 
-const GamePiece = ({ color }: { color: string }) => {
+const GamePiece = ({
+  color,
+  onClick,
+}: {
+  color: string;
+  onClick: () => void;
+}) => {
   return (
-    <div className={styles.gamePiece} style={{ backgroundColor: color }}></div>
+    <div
+      onClick={onClick}
+      className={styles.gamePiece}
+      style={{ backgroundColor: color }}
+    ></div>
   );
 };
 
