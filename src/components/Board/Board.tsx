@@ -30,7 +30,7 @@ const Board = () => {
     }
   }
 
-  const handleBoardSquareClick = (squareClickIdx: number) => {
+  const handleMoveCheckersPiece = (squareClickIdx: number) => {
     //squareClickIdx passed in as boardSquare key
 
     if (initSquareClickIdx) {
@@ -44,8 +44,26 @@ const Board = () => {
 
       //TODO: add logic for capturing an opponent's piece
       // TODO: encapsulate XYCoords to FlatCoord logic in a function
+      const moveCheckersPiece = () => {
+        const valAtInitSquare = gameState[x1 + y1 * boardHeight];
+        const newGameState = [...gameState];
+        newGameState[x2 + y2 * boardHeight] = valAtInitSquare;
+        newGameState[x1 + y1 * boardHeight] = "";
+        console.log(`moving (${x1}, ${y1}) to (${x2}, ${y2})`);
+        setGameState(newGameState);
+      };
 
-      const [x1, y1] = flatToXYCoords.get(initSquareClickIdx) || [-99, -99];
+      const isCapturingOpponent = () => {
+        const currXYPosition = flatToXYCoords.get(initSquareClickIdx) || [-99, -99]
+        const candidateCapturePosition = flatToXYCoords.get(squareClickIdx) || [-99, -99];
+
+
+        if(gameState[currXYPosition[0]+1 + currXYPosition[1]*boardHeight]
+          //TODO: rethink where this logic is placed
+
+      }
+
+      const [x1, y1] = flatToXYCoords.get(initSquareClickIdx) || [-99, -99]; // default value is off the board
       const [x2, y2] = flatToXYCoords.get(squareClickIdx) || [-99, -99];
       // flatVal = x + y*boardHeight
       if (
@@ -54,16 +72,19 @@ const Board = () => {
         Math.abs(x2 - x1) == 1 &&
         Math.abs(y2 - y1) == 1
       ) {
-        const valAtInitSquare = gameState[x1 + y1 * boardHeight];
-        const newGameState = [...gameState];
-        newGameState[x2 + y2 * boardHeight] = valAtInitSquare;
-        newGameState[x1 + y1 * boardHeight] = "";
-        console.log(`moving (${x1}, ${y1}) to (${x2}, ${y2})`);
-        setGameState(newGameState);
+        moveCheckersPiece();
       }
+
       setInitSquareClickIdx(null);
+      if (isCapturingOpponent()) {
+      }
     } else {
-      setInitSquareClickIdx(squareClickIdx);
+      if (gameState[squareClickIdx]) {
+        //if there's actually a gamePiece here,
+        //TODO: check if you are player red or player black before allowing for a move
+        console.log("initial square click");
+        setInitSquareClickIdx(squareClickIdx);
+      }
     }
   };
   let gameBoard = Array(boardHeight)
@@ -77,8 +98,8 @@ const Board = () => {
               key={`${xIndex}-${yIndex}`} // Adjusted to ensure unique keys
               gamePieceColor={gameState[xIndex + yIndex * boardHeight]} // Also adjust index calculation for gameState
               squareColor={(xIndex + yIndex) % 2 == 0 ? "white" : "grey"}
-              onClick={() =>
-                handleBoardSquareClick(xIndex + yIndex * boardHeight)
+              moveCheckersPiece={() =>
+                handleMoveCheckersPiece(xIndex + yIndex * boardHeight)
               }
             ></BoardSquare>
           ))}
