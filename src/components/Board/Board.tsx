@@ -31,8 +31,6 @@ const Board = () => {
   }
 
   const handleMoveCheckersPiece = (squareClickIdx: number) => {
-    //squareClickIdx passed in as boardSquare key
-
     if (initSquareClickIdx) {
       // there has been an initial click, and we've already verified that there's a piece on this square
       // get the index of this next click (what index this square is on, maybe the key?)
@@ -42,9 +40,9 @@ const Board = () => {
       // Allow it to move
       // ELSE: reset initSquareClickIdx to null
 
-      //TODO: add logic for capturing an opponent's piece
-      // TODO: encapsulate XYCoords to FlatCoord logic in a function
+      //TODO: ADD LOGIC TO ONLY CAPTURE OPPONENT PIECES
       const moveCheckersPiece = () => {
+        // THIS WILL MARK THAT A PIECE HAS BEEN MOVED IN ONLINE PLAY AT THE END
         const valAtInitSquare = gameState[x1 + y1 * boardHeight];
         const newGameState = [...gameState];
         newGameState[x2 + y2 * boardHeight] = valAtInitSquare;
@@ -54,30 +52,93 @@ const Board = () => {
       };
 
       const isCapturingOpponent = () => {
-        const currXYPosition = flatToXYCoords.get(initSquareClickIdx) || [-99, -99]
-        const candidateCapturePosition = flatToXYCoords.get(squareClickIdx) || [-99, -99];
+        console.log("trying to capture opponent");
 
+        const currXYPosition = flatToXYCoords.get(initSquareClickIdx) || [
+          -99, -99,
+        ];
+        const candidateCapturePosition = flatToXYCoords.get(squareClickIdx) || [
+          -98, -98,
+        ];
 
-        if(gameState[currXYPosition[0]+1 + currXYPosition[1]*boardHeight]
-          //TODO: rethink where this logic is placed
+        // check the "direction vector" of the capture is in one of the diagonals (valid) -> magnitude of x dir MUST = y
+        const [d1, d2] = [
+          candidateCapturePosition[0] - currXYPosition[0],
+          candidateCapturePosition[1] - currXYPosition[1],
+        ];
+        if (Math.abs(d1) !== Math.abs(d2)) {
+          //check that we're moving at a "45 degree" angle
+          return false;
+        }
 
-      }
+        // all odd diagonals up to the capture pos contain an opponent piece
 
-      const [x1, y1] = flatToXYCoords.get(initSquareClickIdx) || [-99, -99]; // default value is off the board
+        //determine direction from origin to capture point
+        let captureXDir = 0,
+          captureYDir = 0;
+
+        captureXDir =
+          candidateCapturePosition[0] - currXYPosition[0] > 0 ? 1 : -1;
+        captureYDir =
+          candidateCapturePosition[1] - currXYPosition[1] > 0 ? 1 : -1;
+
+        let k = currXYPosition;
+        let i = 1;
+        while (
+          k[0] <= candidateCapturePosition[0] &&
+          k[1] <= candidateCapturePosition[1]
+        ) {
+          let nextDiagonal = [k[0] * i * captureXDir, k[1] * i * captureYDir];
+          //check if the odd diagonals contain an opponent
+          //
+          if (
+            gameState[nextDiagonal[0] + nextDiagonal[1] * boardHeight] === ""
+          ) {
+            return false;
+          }
+          i = i + 2;
+        }
+
+        i = 2;
+        k = currXYPosition;
+        while (
+          k[0] <= candidateCapturePosition[0] &&
+          k[1] <= candidateCapturePosition[1]
+        ) {
+          let nextDiagonal = [k[0] * i * captureXDir, k[1] * i * captureYDir];
+          //check if the even diagonals contain nothing
+          if (
+            gameState[nextDiagonal[0] + nextDiagonal[1] * boardHeight] !== ""
+          ) {
+            return false;
+          }
+          i = i + 2;
+        }
+
+        return true;
+      };
+
+      const [x1, y1] = flatToXYCoords.get(initSquareClickIdx) || [-99, -99];
+      // default value is off the board
       const [x2, y2] = flatToXYCoords.get(squareClickIdx) || [-99, -99];
       // flatVal = x + y*boardHeight
       if (
         gameState[x1 + y1 * boardHeight] && // we're clicking a square with a piece on it
-        !gameState[x2 + y2 * boardHeight] && // the square we're moving to DOESN'T have a piece on it
-        Math.abs(x2 - x1) == 1 &&
+        !gameState[x2 + y2 * boardHeight] && // the square we're moving to DOESN'T have a piece on i
+        Math.abs(x2 - x1) == 1 && // it's 1 square away (diagonally)
         Math.abs(y2 - y1) == 1
+      ) {
+        console.log("trying normal move");
+        moveCheckersPiece();
+      } else if (
+        gameState[x1 + y1 * boardHeight] && // we're clicking a square with a piece on it
+        !gameState[x2 + y2 * boardHeight] && // the square we're moving to DOESN'T have a piece on it
+        isCapturingOpponent()
       ) {
         moveCheckersPiece();
       }
-
       setInitSquareClickIdx(null);
-      if (isCapturingOpponent()) {
-      }
+
     } else {
       if (gameState[squareClickIdx]) {
         //if there's actually a gamePiece here,
