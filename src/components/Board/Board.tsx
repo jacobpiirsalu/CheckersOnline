@@ -40,7 +40,7 @@ const Board = () => {
       // Allow it to move
       // ELSE: reset initSquareClickIdx to null
 
-      //TODO: ADD LOGIC TO ONLY CAPTURE OPPONENT PIECES
+      //TODO: ADD LOGIC TO ONLY CAPTURE OPPONENT PIECES (and actually remove captures pieces)
       const moveCheckersPiece = () => {
         // THIS WILL MARK THAT A PIECE HAS BEEN MOVED IN ONLINE PLAY AT THE END
         const valAtInitSquare = gameState[x1 + y1 * boardHeight];
