@@ -41,19 +41,18 @@ const Board = () => {
       // ELSE: reset initSquareClickIdx to null
 
       //TODO: ADD LOGIC TO ONLY CAPTURE OPPONENT PIECES (and actually remove captures pieces)
-      const moveCheckersPiece = () => {
+      const moveCheckersPiece = (newGameState: string[]) => {
         // THIS WILL MARK THAT A PIECE HAS BEEN MOVED IN ONLINE PLAY AT THE END
         const valAtInitSquare = gameState[x1 + y1 * boardHeight];
-        const newGameState = [...gameState];
         newGameState[x2 + y2 * boardHeight] = valAtInitSquare;
         newGameState[x1 + y1 * boardHeight] = "";
         console.log(`moving (${x1}, ${y1}) to (${x2}, ${y2})`);
         setGameState(newGameState);
       };
 
-      const isCapturingOpponent = () => {
+      const capturingOpponent = (): string[] => {
         console.log("trying to capture opponent");
-
+        let newGameState = [...gameState];
         const currXYPosition = flatToXYCoords.get(initSquareClickIdx) || [
           -99, -99,
         ];
@@ -68,7 +67,8 @@ const Board = () => {
         ];
         if (Math.abs(d1) !== Math.abs(d2)) {
           //check that we're moving at a "45 degree" angle
-          return false;
+          // return false;
+          return newGameState;
         }
 
         // all odd diagonals up to the capture pos contain an opponent piece
@@ -84,44 +84,85 @@ const Board = () => {
 
         let k = currXYPosition;
         let i = 1;
+        let nextDiagonal = [k[0] + i * captureXDir, k[1] + i * captureYDir];
         while (
-          k[0] <= candidateCapturePosition[0] &&
-          k[1] <= candidateCapturePosition[1]
+          nextDiagonal[0] !== candidateCapturePosition[0] + captureXDir &&
+          nextDiagonal[1] !== candidateCapturePosition[1] + captureYDir
         ) {
-          let nextDiagonal = [k[0] * i * captureXDir, k[1] * i * captureYDir];
+          console.log("inside odd while loop");
+
           //check if the odd diagonals contain an opponent
           //
           if (
             gameState[nextDiagonal[0] + nextDiagonal[1] * boardHeight] === ""
           ) {
-            return false;
+            return newGameState;
           }
           i = i + 2;
+          console.log(`next odd diag: ${nextDiagonal}`);
+          nextDiagonal = [k[0] + i * captureXDir, k[1] + i * captureYDir];
+          if (i > 2 * boardHeight * boardWidth) {
+            console.log('ERROR: infinite loop');
+            break;
+          }
         }
 
         i = 2;
         k = currXYPosition;
+        nextDiagonal = [k[0] + i * captureXDir, k[1] + i * captureYDir];
         while (
-          k[0] <= candidateCapturePosition[0] &&
-          k[1] <= candidateCapturePosition[1]
+          nextDiagonal[0] !== candidateCapturePosition[0] &&
+          nextDiagonal[1] !== candidateCapturePosition[1]
         ) {
-          let nextDiagonal = [k[0] * i * captureXDir, k[1] * i * captureYDir];
+          console.log("inside even while loop");
           //check if the even diagonals contain nothing
           if (
             gameState[nextDiagonal[0] + nextDiagonal[1] * boardHeight] !== ""
           ) {
-            return false;
+            return newGameState;
           }
           i = i + 2;
+          if (i > 2 * boardHeight * boardWidth) {
+            console.log('ERROR: infinite loop');
+            break;
+          }
+          nextDiagonal = [k[0] + i * captureXDir, k[1] + i * captureYDir];
         }
-
-        return true;
+        
+        // actually remove the pieces along the path
+        k = currXYPosition;
+        i = 1;
+        nextDiagonal = [k[0] + i * captureXDir, k[1] + i * captureYDir];
+        // newGameState[nextDiagonal[0] + nextDiagonal[1] * boardHeight] = "";
+        while (
+          nextDiagonal[0] !== candidateCapturePosition[0] + captureXDir &&
+          nextDiagonal[1] !== candidateCapturePosition[1] + captureYDir
+        ) {
+          console.log("inside odd while loop removing pieces");
+          //check if the odd diagonals contain an opponent
+          //
+          if (
+            gameState[nextDiagonal[0] + nextDiagonal[1] * boardHeight] === ""
+          ) {
+            return newGameState;
+          }
+          newGameState[nextDiagonal[0] + nextDiagonal[1] * boardHeight] = "";
+          i = i + 2;
+          nextDiagonal = [k[0] + i * captureXDir, k[1] + i * captureYDir];
+          if (i > 2 * boardHeight * boardWidth) {
+            console.log('ERROR: infinite loop');
+            break;
+          }
+        }
+        
+        return newGameState;
       };
 
       const [x1, y1] = flatToXYCoords.get(initSquareClickIdx) || [-99, -99];
       // default value is off the board
       const [x2, y2] = flatToXYCoords.get(squareClickIdx) || [-99, -99];
       // flatVal = x + y*boardHeight
+
       if (
         gameState[x1 + y1 * boardHeight] && // we're clicking a square with a piece on it
         !gameState[x2 + y2 * boardHeight] && // the square we're moving to DOESN'T have a piece on i
@@ -129,16 +170,15 @@ const Board = () => {
         Math.abs(y2 - y1) == 1
       ) {
         console.log("trying normal move");
-        moveCheckersPiece();
+        moveCheckersPiece([...gameState]);
       } else if (
         gameState[x1 + y1 * boardHeight] && // we're clicking a square with a piece on it
-        !gameState[x2 + y2 * boardHeight] && // the square we're moving to DOESN'T have a piece on it
-        isCapturingOpponent()
+        !gameState[x2 + y2 * boardHeight] // the square we're moving to DOESN'T have a piece on it
       ) {
-        moveCheckersPiece();
+        const newGameState = capturingOpponent();
+        moveCheckersPiece(newGameState);
       }
       setInitSquareClickIdx(null);
-
     } else {
       if (gameState[squareClickIdx]) {
         //if there's actually a gamePiece here,
