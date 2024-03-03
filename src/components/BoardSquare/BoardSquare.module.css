@@ -3,8 +3,8 @@
     display: flex;
     justify-content: center; /* Center the circle horizontally */
     align-items: center; /* Center the circle vertically */
-    width: 2rem;
-    height: 2rem;
+    width: 4rem;
+    height: 4rem;
     margin-right: 0px;
     margin-top: 0px;
 }

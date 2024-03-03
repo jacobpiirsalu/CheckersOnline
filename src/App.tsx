@@ -3,9 +3,10 @@ import Board from "./components/Board/Board";
 
 function App() {
   return (
-    <>
-      <Board />
-    </>
+      <div className="app">
+        <h1>Checkers Online</h1>
+        <Board />
+      </div>
   );
 }
 

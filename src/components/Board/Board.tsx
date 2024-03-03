@@ -8,6 +8,7 @@ const Board = () => {
   const [initSquareClickIdx, setInitSquareClickIdx] = useState<number | null>(
     null
   );
+  const [turnNo, setTurnNo] = useState<number>(0);
   const [gameState, setGameState] = useState<Array<string>>(
     Array(boardHeight * boardWidth)
       .fill("")
@@ -43,11 +44,16 @@ const Board = () => {
       //TODO: ADD LOGIC TO ONLY CAPTURE OPPONENT PIECES (and actually remove captures pieces)
       const moveCheckersPiece = (newGameState: string[]) => {
         // THIS WILL MARK THAT A PIECE HAS BEEN MOVED IN ONLINE PLAY AT THE END
+
         const valAtInitSquare = gameState[x1 + y1 * boardHeight];
+        if (valAtInitSquare.toLowerCase() !== playerTurn.toLowerCase()) {
+          return;
+        }
         newGameState[x2 + y2 * boardHeight] = valAtInitSquare;
         newGameState[x1 + y1 * boardHeight] = "";
         console.log(`moving (${x1}, ${y1}) to (${x2}, ${y2})`);
         setGameState(newGameState);
+        setTurnNo(turnNo + 1);
       };
 
       const capturingOpponent = (): string[] => {
@@ -102,7 +108,7 @@ const Board = () => {
           console.log(`next odd diag: ${nextDiagonal}`);
           nextDiagonal = [k[0] + i * captureXDir, k[1] + i * captureYDir];
           if (i > 2 * boardHeight * boardWidth) {
-            console.log('ERROR: infinite loop');
+            console.log("ERROR: infinite loop");
             break;
           }
         }
@@ -123,12 +129,12 @@ const Board = () => {
           }
           i = i + 2;
           if (i > 2 * boardHeight * boardWidth) {
-            console.log('ERROR: infinite loop');
+            console.log("ERROR: infinite loop");
             break;
           }
           nextDiagonal = [k[0] + i * captureXDir, k[1] + i * captureYDir];
         }
-        
+
         // actually remove the pieces along the path
         k = currXYPosition;
         i = 1;
@@ -150,11 +156,11 @@ const Board = () => {
           i = i + 2;
           nextDiagonal = [k[0] + i * captureXDir, k[1] + i * captureYDir];
           if (i > 2 * boardHeight * boardWidth) {
-            console.log('ERROR: infinite loop');
+            console.log("ERROR: infinite loop");
             break;
           }
         }
-        
+
         return newGameState;
       };
 
@@ -188,6 +194,7 @@ const Board = () => {
       }
     }
   };
+  let playerTurn: string = turnNo % 2 === 0 ? "Red" : "Black";
   let gameBoard = Array(boardHeight)
     .fill("")
     .map((_val, xIndex) => (
@@ -206,7 +213,12 @@ const Board = () => {
           ))}
       </div>
     ));
-  return <div className={styles.board}>{gameBoard}</div>;
+  return (
+    <div>
+      <h2>{playerTurn} to move next</h2>
+      <div className={styles.board}>{gameBoard}</div>
+    </div>
+  );
 };
 
 export default Board;
