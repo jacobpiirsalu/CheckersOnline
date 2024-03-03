@@ -41,12 +41,23 @@ const Board = () => {
       // Allow it to move
       // ELSE: reset initSquareClickIdx to null
 
-      //TODO: ADD LOGIC TO ONLY CAPTURE OPPONENT PIECES (and actually remove captures pieces)
+      //TODO: If a piece gets to the end, change its color (Knight it)
+
       const moveCheckersPiece = (newGameState: string[]) => {
         // THIS WILL MARK THAT A PIECE HAS BEEN MOVED IN ONLINE PLAY AT THE END
 
         const valAtInitSquare = gameState[x1 + y1 * boardHeight];
         if (valAtInitSquare.toLowerCase() !== playerTurn.toLowerCase()) {
+          return;
+        }
+        if (
+          !(
+            (
+              Math.abs(x2 - x1) == 1 && // it's 1 square away (diagonally)
+              Math.abs(y2 - y1) == 1
+            ) // we only want to allow diagonal moves
+          )
+        ) {
           return;
         }
         newGameState[x2 + y2 * boardHeight] = valAtInitSquare;
@@ -74,6 +85,7 @@ const Board = () => {
         if (Math.abs(d1) !== Math.abs(d2)) {
           //check that we're moving at a "45 degree" angle
           // return false;
+          console.log("invalid capture"); //this needs to prevent you from moving the piece
           return newGameState;
         }
 
